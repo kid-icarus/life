@@ -1,0 +1,34 @@
+.cell {
+  border-radius: 100%;
+  width: 10px;
+  height: 10px;
+  float: left;
+  margin: 0;
+}
+
+.alive {
+  background-color: limegreen;
+}
+
+.dead {
+  background-color: #ddd;
+}
+
+button {
+  margin-top: 30px;
+}
+
+#controls {
+  margin: 15px;
+}
+
+#game-board {
+}
+
+body {
+  background-color: #444 !important;
+  display: flex;
+  flex-flow: column;
+  align-items: center;
+  justify-content: center;
+}
