@@ -1,3 +1,7 @@
+import createElement from 'virtual-dom/create-element'
+import diff from 'virtual-dom/diff'
+import h from 'virtual-dom/h'
+import patch from 'virtual-dom/patch'
 import cloneDeep from 'lodash.clonedeep'
 
 class Game {
@@ -7,25 +11,24 @@ class Game {
     this.boardWrapper = document.getElementById(id)
     this.newBoard()
 
-    this.boardElem = document.getElementById('game-board')
-    this.boardElem.style.width = (this.size * 10) + 'px'
-    this.boardElem.style.height = (this.size * 10) + 'px'
+    this.tree = this.renderBoard()
+    this.rootNode = createElement(this.tree)
+    this.boardWrapper.appendChild(this.rootNode)
 
     this.shuffleBtn = document.getElementById('shuffle')
     this.playBtn = document.getElementById('play')
     this.pauseBtn = document.getElementById('pause')
     this.moveBtn = document.getElementById('move')
 
-    this.boardElem.addEventListener('click', this.toggleCell.bind(this))
 
     this.shuffleBtn.addEventListener('click', this.shuffle.bind(this))
     this.playBtn.addEventListener('click', this.play.bind(this))
     this.pauseBtn.addEventListener('click', this.pause.bind(this))
+
     this.moveBtn.addEventListener('click', () => {
       this.move()
       this.render()
     })
-
   }
 
   newBoard () {
@@ -50,16 +53,19 @@ class Game {
 
   play () {
     if (this.interval) return
-    this.interval = window.setInterval(this.sync.bind(this), 300)
+    this.interval = window.requestAnimationFrame(this.sync.bind(this))
   }
 
-  sync () {
+  sync (timestamp) {
     this.move()
     this.render()
+    if (this.interval) {
+      window.requestAnimationFrame(this.sync.bind(this))
+    }
   }
 
   pause () {
-    window.clearInterval(this.interval)
+    window.cancelAnimationFrame(this.interval)
     this.interval = undefined
   }
 
@@ -174,16 +180,27 @@ class Game {
   }
 
   render () {
-    this.boardElem.innerHTML = ''
-    this.board.forEach((row, i) => {
-      row.forEach((cell, j) => {
-        let cellElem = document.createElement('div')
-        cellElem.dataset.row = i
-        cellElem.dataset.col = j
-        cellElem.className = 'cell ' + (cell ? 'alive' : 'dead')
-        this.boardElem.appendChild(cellElem)
+    let newTree = this.renderBoard()
+    let patches = diff(this.tree, newTree)
+    this.rootNode = patch(this.rootNode, patches)
+    this.tree = newTree
+  }
+
+  renderBoard () {
+    return h('#game-board', {
+      style: {
+        width: this.size * 10 + 'px',
+        height: this.size * 10 + 'px'
+      }
+    }, this.renderCells())
+  }
+
+  renderCells () {
+    return this.board.map((row, i) => row.map((cell, j) => {
+      return h('div', {
+        className: 'cell ' + (cell ? 'alive' : 'dead'),
       })
-    })
+    }))
   }
 }
 

@@ -6,6 +6,16 @@
   margin: 0;
 }
 
+@keyframes fadein {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
 .alive {
   background-color: limegreen;
 }
@@ -22,7 +32,9 @@ button {
   margin: 15px;
 }
 
-#game-board {
+#game-board, #controls {
+  animation-duration: 2s;
+  animation-name: fadein;
 }
 
 body {
