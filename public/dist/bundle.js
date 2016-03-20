@@ -3334,6 +3334,39 @@ function isArray(obj) {
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+var size = void 0;
+
+var createBoard = function createBoard(boardSize, random) {
+  var board = [];
+  size = boardSize;
+
+  if (!boardSize) {
+    throw new Error('Missing argument: board must have size');
+  }
+
+  for (var i = 0; i < size; i++) {
+    board[i] = [];
+    for (var j = 0; j < size; j++) {
+      board[i][j] = getCell(random);
+    }
+  }
+  return board;
+};
+
+var getCell = function getCell(random) {
+  if (!random) return 0;
+
+  return Math.floor(Math.random() * 10 % 2);
+};
+
+exports.default = createBoard;
+
+},{}],38:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
@@ -3357,6 +3390,14 @@ var _lodash = require('lodash.clonedeep');
 
 var _lodash2 = _interopRequireDefault(_lodash);
 
+var _board = require('./board');
+
+var _board2 = _interopRequireDefault(_board);
+
+var _move = require('./move');
+
+var _move2 = _interopRequireDefault(_move);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -3369,9 +3410,9 @@ var Game = function () {
 
     this.size = size;
     this.id = id;
-    this.boardWrapper = document.getElementById(id);
-    this.newBoard();
+    this.board = (0, _board2.default)(size, true);
 
+    this.boardWrapper = document.getElementById(id);
     this.tree = this.renderBoard();
     this.rootNode = (0, _createElement2.default)(this.tree);
     this.boardWrapper.appendChild(this.rootNode);
@@ -3386,26 +3427,12 @@ var Game = function () {
     this.pauseBtn.addEventListener('click', this.pause.bind(this));
 
     this.moveBtn.addEventListener('click', function () {
-      _this.move();
+      _this.board = (0, _move2.default)(_this.board);
       _this.render();
     });
   }
 
   _createClass(Game, [{
-    key: 'newBoard',
-    value: function newBoard() {
-      this.board = [];
-      this.nextBoard = [];
-      for (var i = 0; i < this.size; i++) {
-        this.board[i] = [];
-        this.nextBoard[i] = [];
-        for (var j = 0; j < this.size; j++) {
-          this.board[i][j] = 0;
-          this.nextBoard[i][j] = 0;
-        }
-      }
-    }
-  }, {
     key: 'toggleCell',
     value: function toggleCell(e) {
       var row = e.target.dataset.row;
@@ -3422,7 +3449,7 @@ var Game = function () {
   }, {
     key: 'sync',
     value: function sync(timestamp) {
-      this.move();
+      this.board = (0, _move2.default)(this.board);
       this.render();
       if (this.interval) {
         window.requestAnimationFrame(this.sync.bind(this));
@@ -3437,80 +3464,8 @@ var Game = function () {
   }, {
     key: 'shuffle',
     value: function shuffle() {
-      for (var i = 0; i < this.size; i++) {
-        this.board[i] = [];
-        this.nextBoard[i] = [];
-        for (var j = 0; j < this.size; j++) {
-          this.board[i].push(Math.floor(Math.random() * 10 % 2));
-          this.nextBoard[i].push(0);
-        }
-      }
+      this.board = (0, _board2.default)(this.size, true);
       this.render();
-    }
-  }, {
-    key: 'clearNewBoard',
-    value: function clearNewBoard() {
-      var _this2 = this;
-
-      this.nextBoard.forEach(function (row, i) {
-        row.forEach(function (cell, j) {
-          _this2.nextBoard[i][j] = 0;
-        });
-      });
-    }
-  }, {
-    key: 'move',
-    value: function move() {
-      var _this3 = this;
-
-      this.clearNewBoard();
-      this.board.forEach(function (row, i) {
-        row.forEach(function (cell, j) {
-          var neighbors = void 0;
-          if (i === 0) {
-            if (j === 0) {
-              neighbors = [_this3.board[0][1], _this3.board[1][1], _this3.board[1][0]];
-            } else if (j === _this3.size - 1) {
-              neighbors = [_this3.board[0][_this3.size - 2], _this3.board[1][_this3.size - 2], _this3.board[1][_this3.size - 1]];
-            } else {
-              neighbors = [_this3.board[0][j - 1], _this3.board[1][j - 1], _this3.board[1][j], _this3.board[0][j + 1], _this3.board[1][j + 1]];
-            }
-          } else if (i === _this3.size - 1) {
-            if (j === 0) {
-              neighbors = [_this3.board[_this3.size - 2][0], _this3.board[_this3.size - 2][1], _this3.board[_this3.size - 1][1]];
-            } else if (j === _this3.size - 1) {
-              neighbors = [_this3.board[_this3.size - 1][_this3.size - 2], _this3.board[_this3.size - 2][_this3.size - 2], _this3.board[_this3.size - 2][_this3.size - 1]];
-            } else {
-              neighbors = [_this3.board[i][j - 1], _this3.board[i][j + 1], _this3.board[i - 1][j - 1], _this3.board[i - 1][j], _this3.board[i - 1][j + 1]];
-            }
-          } else if (j === 0) {
-            neighbors = [_this3.board[i - 1][0], _this3.board[i - 1][1], _this3.board[i][1], _this3.board[i + 1][0], _this3.board[i + 1][1]];
-          } else if (j === _this3.size - 1) {
-            neighbors = [_this3.board[i - 1][_this3.size - 1], _this3.board[i - 1][_this3.size - 2], _this3.board[i][_this3.size - 2], _this3.board[i + 1][_this3.size - 1], _this3.board[i + 1][_this3.size - 2]];
-          } else {
-            neighbors = [_this3.board[i - 1][j - 1], _this3.board[i - 1][j], _this3.board[i - 1][j + 1], _this3.board[i][j - 1], _this3.board[i][j + 1], _this3.board[i + 1][j - 1], _this3.board[i + 1][j], _this3.board[i + 1][j + 1]];
-          }
-
-          var neighborCount = neighbors.reduce(function (p, k) {
-            return p + k;
-          }, 0);
-
-          if (cell) {
-            if (neighborCount < 2 || neighborCount > 3) {
-              _this3.nextBoard[i][j] = 0;
-            } else if (neighborCount === 2 || neighborCount === 3) {
-              _this3.nextBoard[i][j] = 1;
-            }
-          } else {
-            if (neighborCount === 3) {
-              _this3.nextBoard[i][j] = 1;
-            } else {
-              _this3.nextBoard[i][j] = 0;
-            }
-          }
-        });
-      });
-      this.board = (0, _lodash2.default)(this.nextBoard);
     }
   }, {
     key: 'render',
@@ -3533,10 +3488,11 @@ var Game = function () {
   }, {
     key: 'renderCells',
     value: function renderCells() {
+      var colors = ['pastel-lime', 'pastel-blue', 'pastel-pink', 'pastel-medium-pink', 'pastel-dark-pink'];
       return this.board.map(function (row, i) {
         return row.map(function (cell, j) {
           return (0, _h2.default)('div', {
-            className: 'cell ' + (cell ? 'alive' : 'dead')
+            className: 'cell ' + (cell ? colors[i % 5] : 'dead')
           });
         });
       });
@@ -3548,7 +3504,7 @@ var Game = function () {
 
 exports.default = Game;
 
-},{"lodash.clonedeep":9,"virtual-dom/create-element":10,"virtual-dom/diff":11,"virtual-dom/h":12,"virtual-dom/patch":13}],38:[function(require,module,exports){
+},{"./board":37,"./move":40,"lodash.clonedeep":9,"virtual-dom/create-element":10,"virtual-dom/diff":11,"virtual-dom/h":12,"virtual-dom/patch":13}],39:[function(require,module,exports){
 'use strict';
 
 var _game = require('./game');
@@ -3560,4 +3516,212 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 var game = new _game2.default(50, 'game-wrapper');
 game.render();
 
-},{"./game":37}]},{},[38]);
+},{"./game":38}],40:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _neighbors = require('./neighbors');
+
+var _neighbors2 = _interopRequireDefault(_neighbors);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var move = function move(board) {
+  return board.map(function (row, i) {
+    return row.map(function (cell, j) {
+      var size = board.length;
+
+      var getCellType = function getCellType() {
+        return [i, j].map(function (position) {
+          // Check column position
+          if (position === 0) return 'first';
+          if (position === size - 1) return 'last';
+          return 'middle';
+        }).join('-');
+      };
+
+      var neighbors = (0, _neighbors2.default)(getCellType(i, j), i, j);
+      var neighborCount = neighbors.reduce(function (p, k) {
+        return p + board[k.row][k.col];
+      }, 0);
+
+      if (cell) {
+        if (neighborCount < 2 || neighborCount > 3) return 0;
+        if (neighborCount === 2 || neighborCount === 3) return 1;
+      }
+      if (neighborCount === 3) return 1;
+      return 0;
+    });
+  });
+};
+
+exports.default = move;
+
+},{"./neighbors":41}],41:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+exports.default = function (cellType, i, j) {
+  switch (cellType) {
+    case 'first-first':
+      return [{
+        row: 0,
+        col: 1
+      }, {
+        row: 1,
+        col: 0
+      }, {
+        row: 1,
+        col: 1
+      }];
+
+    case 'first-middle':
+      return [{
+        row: 0,
+        col: j - 1
+      }, {
+        row: 0,
+        col: j + 1
+      }, {
+        row: 1,
+        col: j - 1
+      }, {
+        row: 1,
+        col: j
+      }, {
+        row: 1,
+        col: j + 1
+      }];
+
+    case 'first-last':
+      return [{
+        row: 0,
+        col: j - 1
+      }, {
+        row: 1,
+        col: j - 2
+      }, {
+        row: 1,
+        col: j - 1
+      }];
+
+    case 'middle-first':
+      return [{
+        row: i - 1,
+        col: 0
+      }, {
+        row: i - 1,
+        col: 1
+      }, {
+        row: i,
+        col: 1
+      }, {
+        row: i + 1,
+        col: 1
+      }, {
+        row: i + 1,
+        col: 0
+      }, {
+        row: i + 1,
+        col: 1
+      }];
+
+    case 'middle-middle':
+      return [{
+        row: i - 1,
+        col: j - 1
+      }, {
+        row: i - 1,
+        col: j
+      }, {
+        row: i - 1,
+        col: j + 1
+      }, {
+        row: i,
+        col: j - 1
+      }, {
+        row: i,
+        col: j + 1
+      }, {
+        row: i + 1,
+        col: j - 1
+      }, {
+        row: i + 1,
+        col: j
+      }, {
+        row: i + 1,
+        col: j + 1
+      }];
+
+    case 'middle-last':
+      return [{
+        row: i - 1,
+        col: j - 1
+      }, {
+        row: i - 1,
+        col: j
+      }, {
+        row: i,
+        col: j - 1
+      }, {
+        row: i + 1,
+        col: j - 1
+      }, {
+        row: i + 1,
+        col: j
+      }, {
+        row: i + 1,
+        col: j + 1
+      }];
+
+    case 'last-first':
+      return [{
+        row: i - 1,
+        col: j
+      }, {
+        row: i - 1,
+        col: j + 1
+      }, {
+        row: i,
+        col: j + 1
+      }];
+
+    case 'last-middle':
+      return [{
+        row: i - 1,
+        col: j - 1
+      }, {
+        row: i - 1,
+        col: j
+      }, {
+        row: i - 1,
+        col: j + 1
+      }, {
+        row: i,
+        col: j - 1
+      }, {
+        row: i,
+        col: j + 1
+      }];
+
+    case 'last-last':
+      return [{
+        row: i - 1,
+        col: j - 1
+      }, {
+        row: i - 1,
+        col: j
+      }, {
+        row: i,
+        col: j - 1
+      }];
+  }
+};
+
+},{}]},{},[39]);

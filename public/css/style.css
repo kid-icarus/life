@@ -16,12 +16,28 @@
   }
 }
 
-.alive {
-  background-color: limegreen;
+.pastel-lime, .ui.button.pastel-lime {
+  background-color:	#dcedc1;
+}
+.pastel-blue, .ui.button.pastel-blue {
+  background-color: #a8e6cf;
+}
+.pastel-pink, .ui.button.pastel-pink {
+  background-color: #ffd3b6;
+}
+.pastel-medium-pink, .ui.button.pastel-medium-pink {
+  background-color: #ffaaa5;
+}
+.pastel-dark-pink, .ui.button.pastel-dark-pink {
+  background-color: #ff8b94;
+}
+
+.ui-button:hover {
+  k
 }
 
 .dead {
-  background-color: #ddd;
+  background-color: #444;
 }
 
 button {

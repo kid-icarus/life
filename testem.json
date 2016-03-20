@@ -1,0 +1,9 @@
+{
+  "framework": "mocha",
+  "before_tests": "browserify -t babelify test/index.js --outfile public/dist/test.js",
+  "serve_files": [ "public/dist/test.js" ],
+  "src_files": [
+    "public/js/*.js",
+    "test/*"
+  ]
+}
